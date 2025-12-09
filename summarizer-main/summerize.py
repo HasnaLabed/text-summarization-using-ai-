@@ -1,19 +1,20 @@
-import streamlit as st
-from transformers import pipeline
-from huggingface_hub import snapshot_download
-import pdfplumber
-import re
+import streamlit as st  #to build interface
+from transformers import pipeline #run models
+from huggingface_hub import snapshot_download #install arabic modal localy
+import pdfplumber #extract text from pdf
+import re #clean text
 import torch
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")  #for interface
 
-def clean_arabic_text(text):
-    text=re.sub(r"[^\u0600-\u06FFa-zA-Z0-9\s.,!?؛،\-]"," ",text)
-    text=re.sub(r"\s+"," ",text)
+def clean_arabic_text(text):#make result butter cause arabic model is sensitve
+    text=re.sub(r"[^\u0600-\u06FFa-zA-Z0-9\s.,!?؛،\-]"," ",text)#delete these symbols
+    text=re.sub(r"\s+"," ",text)  #make space orginazed and clean
     return text.strip()
 
 local_dir=snapshot_download("abdalrahmanshahrour/arabartsummarization")
-@st.cache_resource
+@st.cache_resource #make modle install only once
+
 def get_arabic_summarizer():
     return pipeline(
         "text2text-generation",
@@ -28,7 +29,7 @@ def get_english_summarizer():
         model="sshleifer/distilbart-cnn-12-6"
     )
 
-def chunk_text(text,max_chunk_words=400):
+def chunk_text(text,max_chunk_words=400):#cause the models cant summary 5000 tokens
     words=text.split()
     chunks=[]
     for i in range(0,len(words),max_chunk_words):
@@ -51,8 +52,8 @@ def text_summary(text,lang_code):
         chunk=chunk
         result=summarizer(
                 chunk,
-                max_length=120,
-                min_length=40,
+                max_length=300,
+                min_length=120,
                 do_sample=False
                 )
         summaries.append(result[0][output_key])
@@ -77,10 +78,13 @@ def extract_text_from_pdf(file_path):
 if "step" not in st.session_state:
     st.session_state.step ="input"
     st.session_state.texts=[]
+    st.session_state.current_text=""
+
 
 def reset_to_input():
     st.session_state.step="input"
     st.session_state.current_text=""
+    st.rerun()
 
 if st.session_state.step =="input":
     choice = st.sidebar.selectbox("Select your choice", ["Summarize Text", "Summarize Document"])
@@ -99,10 +103,11 @@ if st.session_state.step =="input":
         if input_file and st.button("Summarize"):
             with open("doc_file.pdf","wb") as f:
                 f.write(input_file.getbuffer())
-            extracted_text=extract_text_from_pdf("doc_file.pdf")    
-            st.session_state.texts.append(extracted_text)
-            st.session_state.step ="result"
-            st.session_state.current_text = extracted_text
+            with st.spinner("Extracting text & summarizing..."):
+                extracted_text=extract_text_from_pdf("doc_file.pdf")    
+                st.session_state.texts.append(extracted_text)
+                st.session_state.step ="result"
+                st.session_state.current_text = extracted_text
 
 
 
@@ -121,7 +126,5 @@ if st.session_state.step =="result":
 
     if st.button("back to home"):
         reset_to_input()
-
-
 
 
