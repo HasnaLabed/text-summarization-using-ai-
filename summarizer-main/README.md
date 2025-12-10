@@ -1,15 +1,24 @@
 # Abstractive Text Summarization Web-App
 
-Abstractive summarization is the process of generating a summary of a text by understanding its meaning and creating a new text that conveys the same information in a shorter form. Abstractive methods employ more powerful natural language processing techniques to interpret text and generate new summary text, as opposed to selecting the most representative existing excerpts to perform the summarization. 
-<a href="#Documentations">Read More</a>
+This project is a Streamlit-based web application that performs abstractive text summarization for both Arabic and English texts.
+The app detects the language automatically, splits long documents into chunks, summarizes each chunk using transformer models, and returns a smooth, readable summary. 
 
-The app is built using "txtai" a powerful NLP library. Txtai builds embeddings databases, which are a union of vector indexes and relational databases. This enables similarity search with SQL. Embeddings databases can stand on their own and/or serve as a powerful knowledge source for large language model (LLM) prompts. 
+
+
+NOTE:
+The summarization models used in this project are not developed by me.They are publicly available pretrained models from HuggingFace.
 <a href="#Documentations">Read More</a>
 
 <br>
 
 
 My Streamlit app allows us to process both raw text and PDF files to get a summary.
+## Features
+- Summarize Arabic and English text.
+- Automatic language detection.
+- Support PDF file uploads.
+- Handles lomg texts bu chunking.
+- Abstractive summarization (creates new text rather than copying)
 
 ## Resources
 - <a href="https://summarizze.streamlit.app/">Click for Live Demo</a>
@@ -20,20 +29,59 @@ My Streamlit app allows us to process both raw text and PDF files to get a summa
 
 # Pre-requisites
 * [x] Any IDE
-* [x] txtai[all] `pip install txtai`
+* [x] transformers `pip install transformers`
 * [x] streamlit `pip install streamlit`
-* [x] PyPDF2 `pip install pyPDF2`
+* [x] pdfplumber `pip install pdfplumber`
+* [x] huggingface_hub `pip install huggingface_hub`
+* [x] torch `pip install torch`
 
 # Run the App
-- Clone the repository 
-- Install the dependencies
+- Create virtual enviroment `-m venv venv       
+  venv\Scripts\ activate` 
+- Install the dependencies `pip install -r requuirement.txt`
 - Execute `streamlit run app.py`
 
-# Sample Output
-<img src="https://github.com/TheCleverIdiott/summarizer/blob/main/sample_output.png" width="600" height="300">
+# How it works
+1-Text Input
+You can:
+Enter text manually, or Upload a PDF file
+PDF text is extracted using pdfplumber.
 
-# Documentations
+2-Language Detection
+the app checks for arabic Unicode characters "lang_code = "ar" if re.search(r'[\u0600-\u06FF]', text) else "en""
 
-* <a href="https://www.researchgate.net/profile/N-Moratanch/publication/305912913_A_survey_on_abstractive_text_summarization/links/5a0170faa6fdcc82a3185136/A-survey-on-abstractive-text-summarization.pdf">Abstractive Text Summarization</a>
-* <a href="https://neuml.github.io/txtai/">txtai</a>
-* <a href="https://docs.streamlit.io/">Streamlit</a>
+3-Chuncking Long Text
+Because transformer models cannot summarize very long sequences, the text is split:"chunk_text(text, max_chunk_words=250)"
+Each chunk is summarized separately.
+
+4-summarization Models
+-Arabic summarizer
+Uses HuggingFace pipeline "pipeline("text2text-generation", model="arabartsummarization", tokenizer="arabartsummarization")"
+-English summarizer
+"pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")"
+
+5-Output
+All summaries are combined into a clean, readable final summary.
+
+# Model Used
+###Arabic Model
+-Name: abdalrahmanshahrour/arabartsummarization
+-Pipeline: "text2text-generation"
+-Type :Abstractive summarization ,based on T5-like transformer
+
+###English Model
+-Name: sshleifer/distilbart-cnn-12-6
+-Pipeline: "summarization"
+-Type: Distilled BART
+
+**Both models are pretrained and not created by me
+
+# Documentation
+-[Abstractive Text Summarization (Research Paper)](https://www.researchgate.net/profile/N-Moratanch/publication/305912913_A_survey_on_abstractive_text_summarization)
+
+-[HuggingFace Transformers](https://huggingface.co/docs/transformers)
+
+-[Streamlit Documentation](https://docs.streamlit.io/)
+
+-[pdfplumber](https://github.com/jsvine/pdfplumber)
+
