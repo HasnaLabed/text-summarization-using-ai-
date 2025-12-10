@@ -61,7 +61,7 @@ def text_summary(text,lang_code):
    
    
 def extract_text_from_pdf(file_path):
-    # Open the PDF file using PyPDF2
+    # Open the PDF file using pdfplumber
     text=""
     with pdfplumber.open(file_path) as pdf:
         for page in pdf.pages:
