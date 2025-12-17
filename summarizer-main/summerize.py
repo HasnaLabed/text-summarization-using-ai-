@@ -49,7 +49,6 @@ def text_summary(text,lang_code):
     chunks=chunk_text(text,max_chunk_words=250)        
     summaries=[]
     for chunk in chunks:
-        chunk=chunk
         result=summarizer(
                 chunk,
                 max_length=300,
